@@ -47,6 +47,7 @@ export const INITIAL_FLAGS: FeatureFlag[] = [
   { key: 'enable_collaboration', value: false, description: 'Enable multi-user socket connections' },
   { key: 'enable_genai', value: true, description: 'Enable Gemini/Firefly hooks' },
   { key: 'pya_node_editor', value: false, description: 'Show Pick-Your-Adventure graph editor' },
+  { key: 'force_github_mode', value: false, description: 'Simulate GitHub Pages environment constraints' },
 ];
 
 export const API_REGISTRY: ApiRegistryItem[] = [

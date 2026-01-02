@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Activity, Database, Palette, Flag, Terminal, Info } from 'lucide-react';
+import { X, Activity, Database, Palette, Flag, Terminal, Info, Globe } from 'lucide-react';
 import { INITIAL_FLAGS, API_REGISTRY, MOCK_USER } from '../constants';
 
 interface DevToolsProps {
@@ -10,6 +10,12 @@ interface DevToolsProps {
 const DevTools: React.FC<DevToolsProps> = ({ isOpen, onClose }) => {
   const [activeTab, setActiveTab] = useState<'env' | 'flags' | 'api' | 'colors'>('env');
   const [flags, setFlags] = useState(INITIAL_FLAGS);
+  
+  // Simple heuristic to detect environment
+  const hostname = window.location.hostname;
+  const isGithubPages = hostname.includes('github.io');
+  const isLocal = hostname.includes('localhost') || hostname.includes('127.0.0.1');
+  const detectedEnv = isGithubPages ? 'GitHub Pages' : isLocal ? 'Localhost' : 'Unknown / GIAS';
 
   if (!isOpen) return null;
 
@@ -62,21 +68,31 @@ const DevTools: React.FC<DevToolsProps> = ({ isOpen, onClose }) => {
           {activeTab === 'env' && (
             <div className="space-y-6">
               <div className="bg-black/30 p-4 rounded-lg border border-gray-700 font-mono text-sm">
+                <h3 className="text-gray-400 mb-2 uppercase text-xs font-bold tracking-wider flex items-center gap-2">
+                  <Globe size={12} /> Deployment Context
+                </h3>
+                <div className="grid grid-cols-2 gap-y-2">
+                  <span className="text-secondary">Detected Host:</span>
+                  <span className="text-white">{hostname}</span>
+                  <span className="text-secondary">Environment:</span>
+                  <span className={`${isGithubPages ? 'text-purple-400' : 'text-green-400'}`}>{detectedEnv}</span>
+                  <span className="text-secondary">Base Path:</span>
+                  <span className="text-orange-300">{window.location.pathname}</span>
+                  <span className="text-secondary">Reboot Status:</span>
+                  <span className="text-primary">Active</span>
+                </div>
+              </div>
+
+              <div className="bg-black/30 p-4 rounded-lg border border-gray-700 font-mono text-sm">
                 <h3 className="text-gray-400 mb-2 uppercase text-xs font-bold tracking-wider">Build Info</h3>
                 <div className="grid grid-cols-2 gap-y-2">
-                  <span className="text-secondary">Environment:</span>
-                  <span className="text-green-400">Development (Local)</span>
                   <span className="text-secondary">App Version:</span>
-                  <span className="text-white">v0.1.0-alpha</span>
+                  <span className="text-white">v0.1.1-reboot</span>
                   <span className="text-secondary">React Version:</span>
                   <span className="text-white">18.2.0</span>
                   <span className="text-secondary">User ID:</span>
                   <span className="text-accent">{MOCK_USER.id}</span>
                 </div>
-              </div>
-              <div className="bg-black/30 p-4 rounded-lg border border-gray-700 font-mono text-sm">
-                <h3 className="text-gray-400 mb-2 uppercase text-xs font-bold tracking-wider">Git Info</h3>
-                <p className="text-gray-500 italic">No git information available in mock mode.</p>
               </div>
             </div>
           )}
