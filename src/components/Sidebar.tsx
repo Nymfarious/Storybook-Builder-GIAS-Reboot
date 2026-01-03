@@ -1,9 +1,9 @@
 import React from 'react';
-import { FolderOpen, Undo, Redo, Plus, Image as ImageIcon, Type } from 'lucide-react';
+import { BookOpen, FolderOpen, Save, Undo, Redo, Plus, Image as ImageIcon, Type } from 'lucide-react';
 import { PageSize, BlockType } from '../types';
 import { PAGE_SIZES, AVAILABLE_FONTS } from '../constants';
 import { useStoryStore } from '../store/storyStore';
-import { AssetLibrary } from '../features/assets/CharacterStack';
+import { CharacterPicker } from '../features/assets/CharacterStack';
 
 const Sidebar: React.FC = () => {
   // Select state from store
@@ -17,7 +17,7 @@ const Sidebar: React.FC = () => {
   } = useStoryStore();
 
   // Temporal (Time Travel) controls
-  const { undo, redo } = useStoryStore.temporal.getState();
+  const { undo, redo, pastStates, futureStates } = useStoryStore.temporal.getState();
   
   // Use subscription to update button state automatically
   const [canUndo, setCanUndo] = React.useState(false);
@@ -82,9 +82,9 @@ const Sidebar: React.FC = () => {
       {/* Scrollable Content */}
       <div className="flex-1 overflow-y-auto p-3 space-y-6">
         
-        {/* Asset Library (Characters, BGs, Props, Audio) */}
+        {/* Character Rolodex */}
         <section className="border-b border-gray-800 pb-4">
-           <AssetLibrary />
+           <CharacterPicker />
         </section>
 
         {/* Insert Section */}
@@ -138,7 +138,7 @@ const Sidebar: React.FC = () => {
         <section>
            <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Fonts</h3>
            <div className="space-y-1">
-             {AVAILABLE_FONTS.slice(0, 4).map((font: { name: string; label: string }) => (
+             {AVAILABLE_FONTS.slice(0, 4).map(font => (
                <div key={font.name} className="flex items-center justify-between px-2 py-1.5 rounded hover:bg-white/5 cursor-pointer group">
                  <span style={{ fontFamily: font.name }} className="text-sm text-gray-300 group-hover:text-white">Aa</span>
                  <span className="text-[10px] text-gray-600 group-hover:text-gray-400">{font.label}</span>

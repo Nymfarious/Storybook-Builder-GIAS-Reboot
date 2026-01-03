@@ -20,8 +20,7 @@ const StoryStage: React.FC<StoryStageProps> = ({ scale, setScale }) => {
     addBlockToPage, 
     deleteBlock,
     selectBlock,
-    updateBlockContent,
-    updateBlockTags
+    updateBlockContent
   } = useStoryStore();
 
   const page = pages[activePageIndex];
@@ -53,18 +52,23 @@ const StoryStage: React.FC<StoryStageProps> = ({ scale, setScale }) => {
         const payload = JSON.parse(data);
         if (payload.type === 'image' && payload.content) {
           // Add the block
+          // Note: Real impl would calculate x/y based on drop coordinates relative to the scaled stage
           addBlockToPage(page.id, BlockType.IMAGE);
           
-          // Hack: Update the LAST block added
+          // Hack: Since addBlockToPage doesn't let us pass content immediately in the store signature yet,
+          // we wait a tick or use a more specific action. 
+          // For now, we'll let it create the block, and the user sees a placeholder they can update.
+          // Ideally, addBlockToPage should accept initial content.
+          
+          // Let's do a quick hack to update the LAST block added (which is the one we just made)
+          // Since Zustand actions are synchronous in this setup:
           const state = useStoryStore.getState();
           const updatedPage = state.pages.find(p => p.id === page.id);
           if (updatedPage) {
             const lastBlock = updatedPage.blocks[updatedPage.blocks.length - 1];
             if (lastBlock) {
+              // Update the content to the dropped URL
               updateBlockContent(page.id, lastBlock.id, payload.content);
-              if (payload.tags) {
-                updateBlockTags(page.id, lastBlock.id, payload.tags);
-              }
             }
           }
         }
@@ -144,21 +148,11 @@ const StoryStage: React.FC<StoryStageProps> = ({ scale, setScale }) => {
                         {block.content}
                       </p>
                     ) : (
-                      <div className="relative">
-                        <img 
-                          src={block.content} 
-                          alt="Story asset" 
-                          className="w-full h-auto rounded-sm object-cover pointer-events-none"
-                        />
-                         {/* Visual indicator of tags */}
-                        {block.tags && block.tags.length > 0 && (
-                          <div className="absolute bottom-1 right-1 flex gap-0.5">
-                            {block.tags.map((tag, i) => (
-                              <div key={i} className="w-2 h-2 rounded-full border border-white shadow-sm" style={{ backgroundColor: tag.color }} title={tag.label} />
-                            ))}
-                          </div>
-                        )}
-                      </div>
+                      <img 
+                        src={block.content} 
+                        alt="Story asset" 
+                        className="w-full h-auto rounded-sm object-cover pointer-events-none" // prevent img drag interfering with block drag
+                      />
                     )}
                   </div>
                 );

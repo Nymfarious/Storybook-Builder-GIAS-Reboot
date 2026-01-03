@@ -1,7 +1,7 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import { Page, PageSize, Block, BlockType } from '../types';
 import { PAGE_SIZES } from '../constants';
-import { Plus, Image as ImageIcon, Type, Trash2, Layers, Tag as TagIcon, RefreshCw } from 'lucide-react';
+import { Plus, Image as ImageIcon, Type, Trash2 } from 'lucide-react';
 
 interface CanvasProps {
   page: Page;
@@ -12,8 +12,6 @@ interface CanvasProps {
 
 const Canvas: React.FC<CanvasProps> = ({ page, pageSize, onUpdatePage, scale }) => {
   const size = PAGE_SIZES[pageSize];
-  const pageRef = useRef(page);
-  pageRef.current = page;
 
   const handleAddBlock = (type: BlockType) => {
     const newBlock: Block = {
@@ -24,21 +22,11 @@ const Canvas: React.FC<CanvasProps> = ({ page, pageSize, onUpdatePage, scale }) 
         fontFamily: 'Inter',
         fontSize: '16px',
         color: '#333333'
-      },
-      rotation: 0,
-      zIndex: 1,
-      tags: []
+      }
     };
     onUpdatePage({
       ...page,
       blocks: [...page.blocks, newBlock]
-    });
-  };
-
-  const updateBlock = (blockId: string, updates: Partial<Block>) => {
-    onUpdatePage({
-      ...page,
-      blocks: page.blocks.map(b => b.id === blockId ? { ...b, ...updates } : b)
     });
   };
 
@@ -47,46 +35,6 @@ const Canvas: React.FC<CanvasProps> = ({ page, pageSize, onUpdatePage, scale }) 
       ...page,
       blocks: page.blocks.filter(b => b.id !== blockId)
     });
-  };
-
-  const handleRotateMouseDown = (e: React.MouseEvent, blockId: string, currentRotation: number) => {
-    e.stopPropagation();
-    e.preventDefault();
-
-    const handle = e.currentTarget as HTMLElement;
-    // The handle is inside the block div. We need the center of the block div.
-    // The block div is the parent of the handle's container, or we can look for .group
-    const blockEl = handle.closest('.group');
-    if (!blockEl) return;
-
-    const rect = blockEl.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-
-    const startMouseAngle = Math.atan2(e.clientY - centerY, e.clientX - centerX);
-    const initialBlockRotation = currentRotation || 0;
-
-    const onMouseMove = (ev: MouseEvent) => {
-      const angle = Math.atan2(ev.clientY - centerY, ev.clientX - centerX);
-      const angleDelta = angle - startMouseAngle;
-      const degDelta = angleDelta * (180 / Math.PI);
-      
-      const newRotation = initialBlockRotation + degDelta;
-
-      const currentPage = pageRef.current;
-      onUpdatePage({
-        ...currentPage,
-        blocks: currentPage.blocks.map(b => b.id === blockId ? { ...b, rotation: newRotation } : b)
-      });
-    };
-
-    const onMouseUp = () => {
-      window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('mouseup', onMouseUp);
-    };
-
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('mouseup', onMouseUp);
   };
 
   return (
@@ -99,7 +47,7 @@ const Canvas: React.FC<CanvasProps> = ({ page, pageSize, onUpdatePage, scale }) 
           height: size.height,
           transform: `scale(${scale})`,
           transformOrigin: 'center center',
-          minWidth: size.width,
+          minWidth: size.width, // Prevent shrinking
           minHeight: size.height
         }}
       >
@@ -107,50 +55,17 @@ const Canvas: React.FC<CanvasProps> = ({ page, pageSize, onUpdatePage, scale }) 
         {page.blocks.map((block) => (
           <div 
             key={block.id}
-            className="group absolute hover:ring-2 hover:ring-accent/50 p-1 cursor-move selection-none"
+            className="group relative border border-transparent hover:border-accent/50 hover:bg-accent/5 transition-colors p-2 cursor-move"
             style={{ 
-              top: block.position?.y || '10%',
-              left: block.position?.x || '10%',
-              width: block.type === BlockType.IMAGE ? '200px' : 'auto',
-              transform: `rotate(${block.rotation || 0}deg)`,
-              zIndex: block.zIndex || 1,
+              marginBottom: '1rem',
               ...block.style 
             }}
           >
-            {/* Rotation Handle (Lollipop) */}
-            <div 
-              className="absolute -top-8 left-1/2 -translate-x-1/2 flex-col items-center hidden group-hover:flex cursor-grab active:cursor-grabbing z-50"
-              onMouseDown={(e) => handleRotateMouseDown(e, block.id, block.rotation || 0)}
-            >
-               <div className="w-2.5 h-2.5 bg-white border-2 border-primary rounded-full shadow-sm hover:scale-125 transition-transform" />
-               <div className="w-px h-4 bg-primary" />
-            </div>
-
-            {/* Block Controls (Hover Toolbar) */}
-            <div className="absolute -top-8 right-0 hidden group-hover:flex gap-1 bg-black/80 p-1 rounded z-50 shadow-lg">
-               {/* Layering */}
-               <button 
-                onClick={() => updateBlock(block.id, { zIndex: (block.zIndex || 1) + 1 })}
-                className="p-1 text-white hover:text-accent"
-                title="Bring Forward"
-               >
-                 <Layers size={12} />
-               </button>
-
-               {/* Tags */}
-               <button 
-                onClick={() => alert(`Tags: ${block.tags?.map(t => t.label).join(', ') || 'None'}`)}
-                className="p-1 text-white hover:text-accent"
-                title="View Tags"
-               >
-                 <TagIcon size={12} />
-               </button>
-
-               <div className="w-px h-3 bg-gray-600 mx-1 self-center" />
-
+            {/* Block Controls (Hover) */}
+            <div className="absolute -right-8 top-0 hidden group-hover:flex flex-col gap-1">
               <button 
                 onClick={() => handleDeleteBlock(block.id)}
-                className="p-1 text-red-400 hover:text-red-200"
+                className="p-1.5 bg-red-500 text-white rounded shadow-sm hover:bg-red-600"
                 title="Delete Block"
               >
                 <Trash2 size={12} />
@@ -161,27 +76,17 @@ const Canvas: React.FC<CanvasProps> = ({ page, pageSize, onUpdatePage, scale }) 
               <p 
                 contentEditable 
                 suppressContentEditableWarning
-                className="outline-none min-w-[100px]"
+                className="outline-none"
                 style={{ fontFamily: block.style?.fontFamily }}
               >
                 {block.content}
               </p>
             ) : (
-              <div className="relative">
-                 <img 
-                  src={block.content} 
-                  alt="Story asset" 
-                  className="w-full h-auto rounded-sm object-cover pointer-events-none"
-                />
-                {/* Visual indicator of tags */}
-                {block.tags && block.tags.length > 0 && (
-                  <div className="absolute bottom-1 right-1 flex gap-0.5">
-                    {block.tags.map((tag, i) => (
-                      <div key={i} className="w-2 h-2 rounded-full border border-white shadow-sm" style={{ backgroundColor: tag.color }} />
-                    ))}
-                  </div>
-                )}
-              </div>
+              <img 
+                src={block.content} 
+                alt="Story asset" 
+                className="w-full h-auto rounded-sm object-cover"
+              />
             )}
           </div>
         ))}
@@ -193,7 +98,7 @@ const Canvas: React.FC<CanvasProps> = ({ page, pageSize, onUpdatePage, scale }) 
           </div>
         )}
 
-        {/* Floating Action Button for Adding Blocks */}
+        {/* Floating Action Button for Adding Blocks (Mocking DnD for now) */}
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 opacity-0 hover:opacity-100 transition-opacity bg-white/90 p-2 rounded-full shadow-lg border border-gray-200">
            <button 
             onClick={() => handleAddBlock(BlockType.TEXT)}

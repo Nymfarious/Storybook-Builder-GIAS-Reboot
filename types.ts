@@ -18,12 +18,22 @@ export enum PageSize {
   MOBILE = 'Mobile'
 }
 
+export interface Tag {
+  label: string;
+  color: string; // Hex code
+  type: 'name' | 'sex' | 'prop' | 'background' | 'main_char' | 'custom';
+}
+
 export interface Block {
   id: string;
   type: BlockType;
   content: string; // Text content or Image URL
   style?: Record<string, any>; // CSS properties like fontFamily, color
-  position?: { x: number; y: number }; // For free-form dragging later
+  position?: { x: number; y: number }; // For free-form dragging
+  rotation?: number; // 0-360 degrees
+  zIndex?: number; // Layering
+  isPinned?: boolean; // If true, cannot be moved
+  tags?: Tag[]; // Classification
 }
 
 export interface Page {
