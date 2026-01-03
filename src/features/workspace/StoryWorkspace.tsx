@@ -1,5 +1,5 @@
 import React, { ReactNode, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { AIStub } from '../../components/ui/AIStub';
 import { TimelineRail } from '../timeline/TimelineRail';
 import { ChevronUp, X, GripHorizontal } from 'lucide-react';
@@ -45,10 +45,6 @@ export const StoryWorkspace: React.FC<StoryWorkspaceProps> = ({
       </main>
 
       {/* 3. Bottom Rail (Timeline) - Animated Container */}
-      {/* 
-         We use a fixed height for the collapsed state to ensure it shows just the title/controls.
-         When expanded, it takes up 60% of the viewport height.
-      */}
       <motion.footer 
         initial={false}
         animate={{ 
@@ -64,13 +60,13 @@ export const StoryWorkspace: React.FC<StoryWorkspaceProps> = ({
           className={`h-8 w-full flex items-center justify-between px-4 bg-slate-800/50 border-b border-gray-800 cursor-pointer hover:bg-slate-800 transition-colors ${isTimelineExpanded ? 'cursor-default' : ''}`}
         >
           <div className="flex items-center gap-2">
-             <GripHorizontal size={14} className="text-gray-500" />
-             <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Timeline</span>
+            <GripHorizontal size={14} className="text-gray-500" />
+            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Timeline</span>
           </div>
 
           <div className="flex items-center gap-2">
             {!isTimelineExpanded && (
-               <span className="text-[10px] text-gray-500 mr-2 animate-pulse">Click to expand</span>
+              <span className="text-[10px] text-gray-500 mr-2 animate-pulse">Click to expand</span>
             )}
             
             {/* Close / Minimize Button - Only visible when expanded */}

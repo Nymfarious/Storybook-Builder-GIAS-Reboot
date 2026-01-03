@@ -1,13 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, PanInfo } from 'framer-motion';
-import { Clip as ClipType } from '../../store/timelineStore';
-import { useTimelineStore } from '../../store/timelineStore';
+import { Clip as ClipType, useTimelineStore } from '../../store/timelineStore';
 import { triggerHaptic } from '../../utils/haptics';
 import { GripVertical } from 'lucide-react';
 
 interface ClipProps {
   clip: ClipType;
-  pps: number; // Pixels Per Second
+  pps: number;
   colorClass: string;
 }
 
@@ -18,13 +17,12 @@ export const Clip: React.FC<ClipProps> = ({ clip, pps, colorClass }) => {
   const [tempName, setTempName] = useState(clip.content);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Styling based on track type
-  const styles = {
+  const styles: Record<string, string> = {
     blue: 'bg-blue-600 border-blue-400 text-blue-100',
     green: 'bg-green-600 border-green-400 text-green-100',
     purple: 'bg-purple-600 border-purple-400 text-purple-100',
     orange: 'bg-orange-600 border-orange-400 text-orange-100',
-  }[colorClass] || 'bg-gray-600 border-gray-400';
+  };
 
   useEffect(() => {
     if (isRenaming && inputRef.current) {
@@ -33,22 +31,18 @@ export const Clip: React.FC<ClipProps> = ({ clip, pps, colorClass }) => {
     }
   }, [isRenaming]);
 
-  // --- Logic ---
   const SNAP_SECONDS = 0.5;
   const SNAP_PX = SNAP_SECONDS * pps;
 
-  // Calculate position
   const left = clip.startTime * pps;
   const width = clip.duration * pps;
 
   const handleDragEnd = (_: any, info: PanInfo) => {
     setIsDragging(false);
     
-    // Calculate new start time based on drag delta
     const deltaPixels = info.offset.x;
     const currentX = left + deltaPixels;
     
-    // Snap Logic
     let newStartTime = Math.round(currentX / SNAP_PX) * SNAP_SECONDS;
     if (newStartTime < 0) newStartTime = 0;
 
@@ -61,7 +55,7 @@ export const Clip: React.FC<ClipProps> = ({ clip, pps, colorClass }) => {
   const handleResizeEnd = (_: any, info: PanInfo) => {
     const currentWidth = width + info.offset.x;
     let newDuration = Math.round(currentWidth / SNAP_PX) * SNAP_SECONDS;
-    if (newDuration < 0.5) newDuration = 0.5; // Min duration
+    if (newDuration < 0.5) newDuration = 0.5;
 
     if (newDuration !== clip.duration) {
       triggerHaptic('light');
@@ -74,7 +68,7 @@ export const Clip: React.FC<ClipProps> = ({ clip, pps, colorClass }) => {
     if (tempName.trim() && tempName !== clip.content) {
       updateClip(clip.id, { content: tempName.trim() });
     } else {
-      setTempName(clip.content); // Revert
+      setTempName(clip.content);
     }
   };
 
@@ -88,9 +82,9 @@ export const Clip: React.FC<ClipProps> = ({ clip, pps, colorClass }) => {
 
   return (
     <motion.div
-      className={`absolute top-2 bottom-2 rounded-md border shadow-sm group overflow-visible select-none ${styles} ${isDragging ? 'z-20 ring-2 ring-white/50 cursor-grabbing' : 'z-10 cursor-grab'}`}
+      className={`absolute top-1 bottom-1 rounded-md border shadow-sm group overflow-visible select-none ${styles[colorClass] || styles.blue} ${isDragging ? 'z-20 ring-2 ring-white/50 cursor-grabbing' : 'z-10 cursor-grab'}`}
       style={{ left, width }}
-      drag={!isRenaming ? "x" : false} // Disable drag when renaming
+      drag={!isRenaming ? "x" : false}
       dragMomentum={false}
       dragElastic={0}
       onDragStart={() => setIsDragging(true)}
@@ -117,14 +111,14 @@ export const Clip: React.FC<ClipProps> = ({ clip, pps, colorClass }) => {
         )}
       </div>
 
-      {/* Hover Info (Start Time) */}
+      {/* Hover Info */}
       {!isRenaming && (
         <div className="absolute -top-5 left-0 bg-black/80 text-white text-[9px] px-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap z-30 transition-opacity">
           {clip.startTime.toFixed(1)}s
         </div>
       )}
 
-      {/* Resize Handle (Right) */}
+      {/* Resize Handle */}
       {!isRenaming && (
         <motion.div
           drag="x"

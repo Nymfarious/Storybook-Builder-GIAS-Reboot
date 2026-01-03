@@ -1,25 +1,22 @@
 import { create } from 'zustand';
-import { immer } from 'zustand/middleware/immer';
 
 interface DevToolsState {
-  // Toggles the visibility of "Teal Stub" AI opportunity buttons
   showAIStubs: boolean;
-  
-  // Actions
   toggleAIStubs: () => void;
-  setAIStubs: (visible: boolean) => void;
+  
+  // Cognitive Engine Settings
+  lexicalLevel: number;
+  conceptualLevel: number;
+  setLexicalLevel: (level: number) => void;
+  setConceptualLevel: (level: number) => void;
 }
 
-export const useDevToolsStore = create<DevToolsState>()(
-  immer((set) => ({
-    showAIStubs: true, // Default to true for development visibility
-
-    toggleAIStubs: () => set((state) => {
-      state.showAIStubs = !state.showAIStubs;
-    }),
-
-    setAIStubs: (visible) => set((state) => {
-      state.showAIStubs = visible;
-    }),
-  }))
-);
+export const useDevToolsStore = create<DevToolsState>((set) => ({
+  showAIStubs: true,
+  toggleAIStubs: () => set((state) => ({ showAIStubs: !state.showAIStubs })),
+  
+  lexicalLevel: 3,
+  conceptualLevel: 3,
+  setLexicalLevel: (level) => set({ lexicalLevel: Math.max(1, Math.min(5, level)) }),
+  setConceptualLevel: (level) => set({ conceptualLevel: Math.max(1, Math.min(5, level)) }),
+}));

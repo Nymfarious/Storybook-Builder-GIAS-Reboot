@@ -1,96 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MeKu Storybook Builder</title>
-    <meta name="description" content="Create stunning visual stories, comics, and graphic novels." />
-    <meta name="theme-color" content="#1e293b" />
-
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        darkMode: 'class',
-        theme: {
-          extend: {
-            colors: {
-              background: '#0f172a', // Slate 900
-              surface: '#1e293b',    // Slate 800
-              primary: '#f97316',    // Orange 500
-              secondary: '#64748b',  // Slate 500
-              accent: '#38bdf8',     // Sky 400
-            },
-            fontFamily: {
-              sans: ['Inter', 'sans-serif'],
-              display: ['Bangers', 'cursive'],
-              story: ['Merriweather', 'serif'],
-              comic: ['Bangers', 'cursive'],
-              scary: ['Creepster', 'cursive'],
-              tech: ['Orbitron', 'sans-serif'],
-            }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MeKu Storybook Builder</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📖</text></svg>">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwindcss.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#a78bfa',
+            secondary: '#fbbf24',
+            accent: '#f97316',
+            surface: '#1e293b'
+          },
+          fontFamily: {
+            display: ['Playfair Display', 'serif'],
+            story: ['Merriweather', 'serif'],
+            sans: ['Inter', 'sans-serif']
           }
         }
       }
-    </script>
+    }
+  </script>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
 
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Bangers&family=Creepster&family=Nosifer&family=Bungee:wght@400&family=Playfair+Display:wght@400;700&family=Crimson+Text:wght@400;700&family=Lora:wght@400;700&family=Merriweather:wght@400;700&family=Open+Sans:wght@400;600;700&family=Roboto:wght@400;500;700&family=Montserrat:wght@400;600;700&family=Poppins:wght@400;500;600;700&family=Fredoka+One&family=Righteous&family=Orbitron:wght@400;700&family=Anton&display=swap" rel="stylesheet">
-    
-    <style>
-      body {
-        background-color: #0f172a;
-        color: #f8fafc;
-        overflow: hidden; /* App-like feel */
-      }
-      /* Custom Scrollbar */
-      ::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
-      }
-      ::-webkit-scrollbar-track {
-        background: #1e293b; 
-      }
-      ::-webkit-scrollbar-thumb {
-        background: #475569; 
-        border-radius: 4px;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background: #64748b; 
-      }
-    </style>
+  <!-- Import Map for ES Modules -->
   <script type="importmap">
-{
-  "imports": {
-    "react": "https://esm.sh/react@18.3.1",
-    "react/": "https://esm.sh/react@18.3.1/",
-    "react-dom": "https://esm.sh/react-dom@18.3.1",
-    "react-dom/": "https://esm.sh/react-dom@18.3.1/",
-    "@google/genai": "https://esm.sh/@google/genai@^1.34.0",
-    "lucide-react": "https://esm.sh/lucide-react@0.294.0?deps=react@18.3.1",
-    "vite": "https://esm.sh/vite@^5.0.0",
-    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^4.2.0",
-    "zustand": "https://esm.sh/zustand@4.5.2?deps=react@18.3.1",
-    "zustand/middleware/immer": "https://esm.sh/zustand@4.5.2/middleware/immer?deps=react@18.3.1",
-    "immer": "https://esm.sh/immer@10.0.4",
-    "zundo": "https://esm.sh/zundo@2.1.0?deps=zustand@4.5.2,react@18.3.1",
-    "framer-motion": "https://esm.sh/framer-motion@11.0.8?deps=react@18.3.1",
-    "clsx": "https://esm.sh/clsx@2.1.0",
-    "tailwind-merge": "https://esm.sh/tailwind-merge@2.2.1",
-    "zustand/": "https://esm.sh/zustand@^5.0.9/",
-    "vite-plugin-singlefile": "https://esm.sh/vite-plugin-singlefile@^2.3.0",
-    "path": "https://esm.sh/path@^0.12.7"
+  {
+    "imports": {
+      "react": "https://esm.sh/react@18.3.1",
+      "react-dom/client": "https://esm.sh/react-dom@18.3.1/client",
+      "react/jsx-runtime": "https://esm.sh/react@18.3.1/jsx-runtime",
+      "lucide-react": "https://esm.sh/lucide-react@0.460.0?deps=react@18.3.1",
+      "zustand": "https://esm.sh/zustand@5.0.0?deps=react@18.3.1",
+      "zustand/middleware/immer": "https://esm.sh/zustand@5.0.0/middleware/immer?deps=react@18.3.1",
+      "immer": "https://esm.sh/immer@10.1.1",
+      "zundo": "https://esm.sh/zundo@2.3.0?deps=react@18.3.1,zustand@5.0.0",
+      "framer-motion": "https://esm.sh/framer-motion@11.11.0?deps=react@18.3.1",
+      "clsx": "https://esm.sh/clsx@2.1.1",
+      "tailwind-merge": "https://esm.sh/tailwind-merge@2.5.2"
+    }
   }
-}
-</script>
-<link rel="stylesheet" href="/index.css">
+  </script>
+
+  <style>
+    /* Custom scrollbar */
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #1e293b; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #64748b; }
+    
+    .scrollbar-thin::-webkit-scrollbar { width: 4px; height: 4px; }
+    .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+    .scrollbar-thin::-webkit-scrollbar-thumb { background: #374151; border-radius: 2px; }
+    
+    .scrollbar-none::-webkit-scrollbar { display: none; }
+    .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* Animations */
+    @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slide-in-from-bottom-2 { from { transform: translateY(8px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    @keyframes slide-in-from-top-2 { from { transform: translateY(-8px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    
+    .animate-in { animation: fade-in 0.2s ease-out, slide-in-from-bottom-2 0.2s ease-out; }
+    .fade-in { animation: fade-in 0.2s ease-out; }
+    .slide-in-from-bottom-2 { animation: slide-in-from-bottom-2 0.2s ease-out; }
+    .slide-in-from-top-2 { animation: slide-in-from-top-2 0.2s ease-out; }
+  </style>
 </head>
-  <body>
-    <div id="root"></div>
-    <!-- Entry Point: Relative path ./index.tsx ensures it works on GH Pages subdirectories and Root paths -->
-    <script type="module" src="./index.tsx"></script>
-  <script type="module" src="/index.tsx"></script>
+<body class="bg-slate-950 text-white antialiased">
+  <div id="root"></div>
+  <script type="module" src="./src/index.tsx"></script>
 </body>
 </html>

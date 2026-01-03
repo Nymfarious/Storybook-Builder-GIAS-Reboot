@@ -17,11 +17,14 @@ interface StoryState {
   setPageSize: (size: PageSize) => void;
   
   // Block Actions
-  addBlockToPage: (pageId: string, type: BlockType) => void;
+  addBlockToPage: (pageId: string, type: BlockType, content?: string, tags?: Tag[]) => void;
   updateBlockContent: (pageId: string, blockId: string, content: string) => void;
   updateBlockStyle: (pageId: string, blockId: string, style: Record<string, any>) => void;
   updateBlockPosition: (pageId: string, blockId: string, x: number, y: number) => void;
+  updateBlockRotation: (pageId: string, blockId: string, rotation: number) => void;
+  updateBlockZIndex: (pageId: string, blockId: string, zIndex: number) => void;
   updateBlockTags: (pageId: string, blockId: string, tags: Tag[]) => void;
+  toggleBlockPin: (pageId: string, blockId: string) => void;
   deleteBlock: (pageId: string, blockId: string) => void;
   selectBlock: (blockId: string | null) => void;
 }
@@ -40,7 +43,8 @@ export const useStoryStore = create<StoryState>()(
           projectId: state.pages[0].projectId,
           index: state.pages.length,
           layoutType: LayoutType.SINGLE,
-          blocks: []
+          blocks: [],
+          background: '#ffffff'
         };
         state.pages.push(newPage);
         state.activePageIndex = state.pages.length - 1;
@@ -58,21 +62,23 @@ export const useStoryStore = create<StoryState>()(
         state.pageSize = size;
       }),
 
-      addBlockToPage: (pageId, type) => set((state) => {
+      addBlockToPage: (pageId, type, content, tags) => set((state) => {
         const page = state.pages.find(p => p.id === pageId);
         if (page) {
-           const newBlock: Block = {
+          const newBlock: Block = {
             id: `blk_${Date.now()}`,
             type,
-            content: type === BlockType.TEXT ? 'Double-click to edit text...' : 'https://picsum.photos/400/300',
+            content: content || (type === BlockType.TEXT ? 'Double-click to edit...' : 'https://picsum.photos/400/300'),
             style: {
               fontFamily: 'Inter',
               fontSize: '16px',
               color: '#333333',
-              marginBottom: '1rem'
             },
-            position: { x: 0, y: 0 },
-            tags: []
+            position: { x: 50, y: 50 + (page.blocks.length * 20) }, // Stagger new blocks
+            rotation: 0,
+            zIndex: page.blocks.length + 1,
+            isPinned: false,
+            tags: tags || []
           };
           page.blocks.push(newBlock);
           state.selectedBlockId = newBlock.id;
@@ -98,8 +104,25 @@ export const useStoryStore = create<StoryState>()(
       updateBlockPosition: (pageId, blockId, x, y) => set((state) => {
         const page = state.pages.find(p => p.id === pageId);
         const block = page?.blocks.find(b => b.id === blockId);
-        if (block) {
+        if (block && !block.isPinned) {
           block.position = { x, y };
+        }
+      }),
+
+      updateBlockRotation: (pageId, blockId, rotation) => set((state) => {
+        const page = state.pages.find(p => p.id === pageId);
+        const block = page?.blocks.find(b => b.id === blockId);
+        if (block) {
+          // Normalize rotation to 0-360
+          block.rotation = ((rotation % 360) + 360) % 360;
+        }
+      }),
+
+      updateBlockZIndex: (pageId, blockId, zIndex) => set((state) => {
+        const page = state.pages.find(p => p.id === pageId);
+        const block = page?.blocks.find(b => b.id === blockId);
+        if (block) {
+          block.zIndex = zIndex;
         }
       }),
 
@@ -108,6 +131,14 @@ export const useStoryStore = create<StoryState>()(
         const block = page?.blocks.find(b => b.id === blockId);
         if (block) {
           block.tags = tags;
+        }
+      }),
+
+      toggleBlockPin: (pageId, blockId) => set((state) => {
+        const page = state.pages.find(p => p.id === pageId);
+        const block = page?.blocks.find(b => b.id === blockId);
+        if (block) {
+          block.isPinned = !block.isPinned;
         }
       }),
 
@@ -127,7 +158,6 @@ export const useStoryStore = create<StoryState>()(
     })),
     {
       limit: 50, // Undo history limit
-      // Don't save history when selecting blocks, only when modifying them
       partialize: (state) => ({
         pages: state.pages,
         pageSize: state.pageSize,

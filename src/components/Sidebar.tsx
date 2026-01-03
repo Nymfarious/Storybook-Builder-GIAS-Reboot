@@ -1,12 +1,11 @@
 import React from 'react';
-import { BookOpen, FolderOpen, Save, Undo, Redo, Plus, Image as ImageIcon, Type } from 'lucide-react';
+import { FolderOpen, Undo, Redo, Plus, Image as ImageIcon, Type } from 'lucide-react';
 import { PageSize, BlockType } from '../types';
 import { PAGE_SIZES, AVAILABLE_FONTS } from '../constants';
 import { useStoryStore } from '../store/storyStore';
-import { CharacterPicker } from '../features/assets/CharacterStack';
+import { AssetLibrary } from '../features/assets/AssetLibrary';
 
 const Sidebar: React.FC = () => {
-  // Select state from store
   const { 
     pageSize, 
     setPageSize, 
@@ -17,9 +16,8 @@ const Sidebar: React.FC = () => {
   } = useStoryStore();
 
   // Temporal (Time Travel) controls
-  const { undo, redo, pastStates, futureStates } = useStoryStore.temporal.getState();
+  const { undo, redo } = useStoryStore.temporal.getState();
   
-  // Use subscription to update button state automatically
   const [canUndo, setCanUndo] = React.useState(false);
   const [canRedo, setCanRedo] = React.useState(false);
 
@@ -80,11 +78,11 @@ const Sidebar: React.FC = () => {
       </div>
 
       {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto p-3 space-y-6">
+      <div className="flex-1 overflow-y-auto p-3 space-y-6 custom-scrollbar">
         
-        {/* Character Rolodex */}
+        {/* Asset Library (Characters, Backgrounds, Props, SFX) */}
         <section className="border-b border-gray-800 pb-4">
-           <CharacterPicker />
+          <AssetLibrary />
         </section>
 
         {/* Insert Section */}
@@ -113,7 +111,7 @@ const Sidebar: React.FC = () => {
           <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Canvas</h3>
           <div className="space-y-3">
             <div>
-              <label className="block text-[10px] text-secondary mb-1">Format</label>
+              <label className="block text-[10px] text-gray-400 mb-1">Format</label>
               <select 
                 value={pageSize} 
                 onChange={(e) => setPageSize(e.target.value as PageSize)}
@@ -126,25 +124,25 @@ const Sidebar: React.FC = () => {
             </div>
             
             <div>
-              <label className="block text-[10px] text-secondary mb-1">Active Page</label>
-               <div className="flex items-center justify-between text-xs text-gray-300 bg-black/30 px-2 py-1.5 rounded border border-gray-700">
-                  <span>Page {activePageIndex + 1} of {pages.length}</span>
-               </div>
+              <label className="block text-[10px] text-gray-400 mb-1">Active Page</label>
+              <div className="flex items-center justify-between text-xs text-gray-300 bg-black/30 px-2 py-1.5 rounded border border-gray-700">
+                <span>Page {activePageIndex + 1} of {pages.length}</span>
+              </div>
             </div>
           </div>
         </section>
 
         {/* Typography */}
         <section>
-           <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Fonts</h3>
-           <div className="space-y-1">
-             {AVAILABLE_FONTS.slice(0, 4).map(font => (
-               <div key={font.name} className="flex items-center justify-between px-2 py-1.5 rounded hover:bg-white/5 cursor-pointer group">
-                 <span style={{ fontFamily: font.name }} className="text-sm text-gray-300 group-hover:text-white">Aa</span>
-                 <span className="text-[10px] text-gray-600 group-hover:text-gray-400">{font.label}</span>
-               </div>
-             ))}
-           </div>
+          <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">Fonts</h3>
+          <div className="space-y-1">
+            {AVAILABLE_FONTS.slice(0, 4).map(font => (
+              <div key={font.name} className="flex items-center justify-between px-2 py-1.5 rounded hover:bg-white/5 cursor-pointer group">
+                <span style={{ fontFamily: font.name }} className="text-sm text-gray-300 group-hover:text-white">Aa</span>
+                <span className="text-[10px] text-gray-600 group-hover:text-gray-400">{font.label}</span>
+              </div>
+            ))}
+          </div>
         </section>
 
       </div>

@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect } from 'react';
 
 interface MendingOverlayProps {
   xPosition: number;
@@ -14,35 +13,36 @@ export const MendingOverlay: React.FC<MendingOverlayProps> = ({ xPosition, onCom
 
   return (
     <div 
-      className="absolute top-0 bottom-0 pointer-events-none z-50 flex flex-col justify-center items-center"
-      style={{ left: xPosition, width: 2, transform: 'translateX(-1px)' }}
+      className="absolute top-6 bottom-0 w-1 z-40 pointer-events-none"
+      style={{ left: xPosition }}
     >
-      {/* The Central Stitch Line */}
-      <motion.div 
-        initial={{ height: '0%', opacity: 1 }}
-        animate={{ height: '100%', opacity: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-        className="w-[2px] bg-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.8)]"
+      {/* The "Stitch" line */}
+      <div 
+        className="absolute inset-0 w-[2px] animate-pulse"
+        style={{
+          background: 'linear-gradient(180deg, #a855f7 0%, #fbbf24 50%, #a855f7 100%)',
+          boxShadow: '0 0 10px #a855f7, 0 0 20px #fbbf24',
+          animation: 'mending-glow 0.8s ease-out forwards'
+        }}
+      />
+      
+      {/* Expanding Ring Effect */}
+      <div 
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-2 border-purple-400"
+        style={{ animation: 'mending-ring 0.8s ease-out forwards' }}
       />
 
-      {/* The Burst Effect */}
-      <motion.div
-        initial={{ scale: 0, opacity: 1 }}
-        animate={{ scale: 2, opacity: 0 }}
-        transition={{ duration: 0.5 }}
-        className="absolute top-1/2 -translate-y-1/2 w-4 h-96 bg-yellow-400/20 blur-xl rounded-full"
-      />
-
-      {/* Stitch Cross-hatch particles */}
-      {[...Array(6)].map((_, i) => (
-        <motion.div
-          key={i}
-          initial={{ opacity: 1, x: i % 2 === 0 ? -10 : 10, y: (i - 3) * 20 }}
-          animate={{ opacity: 0, x: 0 }}
-          transition={{ duration: 0.4, delay: i * 0.05 }}
-          className="absolute w-4 h-0.5 bg-purple-300 top-1/2"
-        />
-      ))}
+      <style>{`
+        @keyframes mending-glow {
+          0% { opacity: 1; transform: scaleY(1); }
+          50% { opacity: 1; transform: scaleY(1.1); }
+          100% { opacity: 0; transform: scaleY(0); }
+        }
+        @keyframes mending-ring {
+          0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+          100% { transform: translate(-50%, -50%) scale(4); opacity: 0; }
+        }
+      `}</style>
     </div>
   );
 };

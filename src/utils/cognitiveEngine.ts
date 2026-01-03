@@ -1,100 +1,117 @@
 export interface CognitiveSettings {
-  lexicalLevel: number; // 1-5: Vocabulary and Sentence Structure
-  conceptualLevel: number; // 1-5: Abstraction and Themes
+  lexicalLevel: 1 | 2 | 3 | 4 | 5;
+  conceptualLevel: 1 | 2 | 3 | 4 | 5;
 }
 
-export interface CognitiveAnalysis {
+export interface StoryBeatAnalysis {
+  estimatedReadingAge: string;
   lexicalScore: number;
   conceptualScore: number;
+  suggestions: string[];
   wordCount: number;
-  readabilityLabel: string;
-  suggestion?: string;
+  sentenceCount: number;
+  avgWordsPerSentence: number;
 }
 
-const LEXICAL_GUIDES: Record<number, string> = {
-  1: "Use only Dolch sight words and CVC (consonant-vowel-consonant) words. Max sentence length: 5 words. Use repetition.",
-  2: "Use simple sentences. Focus on high-frequency verbs. Avoid compound sentences.",
-  3: "Use compound sentences (and, but). Introduce descriptive adjectives. Paragraphs can have 3-4 sentences.",
-  4: "Use varied sentence structures. Introduce specific vocabulary (e.g., 'sprinted' instead of 'ran').",
-  5: "Use complex sentence structures, including dependent clauses. Use sophisticated vocabulary suitable for Junior High level."
+const LEXICAL_DESCRIPTIONS: Record<number, string> = {
+  1: 'Sight words only. Use CVC words (cat, dog, run). Max 3-4 letters.',
+  2: 'Early reader vocabulary. Simple compound words (sunlight, bedroom).',
+  3: 'Elementary vocabulary. Common adjectives and adverbs.',
+  4: 'Middle school vocabulary. Domain-specific terms, multi-syllable words.',
+  5: 'Advanced vocabulary. SAT-level words, technical jargon, idioms.',
 };
 
-const CONCEPTUAL_GUIDES: Record<number, string> = {
-  1: "Focus strictly on concrete objects (what can be seen/touched). No internal monologue. Focus on 'What is happening now?'",
-  2: "Focus on simple cause and effect. Basic emotions (happy, sad, mad).",
-  3: "Introduce sequences of events. Explore motivation (Why did they do it?). Focus on friends/family dynamics.",
-  4: "Explore internal conflict. Characters solve problems using logic. distinct character voices.",
-  5: "Explore abstract themes (betrayal, hope, irony). Focus on moral ambiguity and 'Why is the world like this?' Use metaphors."
+const CONCEPTUAL_DESCRIPTIONS: Record<number, string> = {
+  1: 'Object permanence. What do you see? Name things. Cause and effect.',
+  2: 'Simple emotions. Happy, sad, scared. Basic wants and needs.',
+  3: 'Social dynamics. Friendship, sharing, fairness. Simple motivations.',
+  4: 'Complex emotions. Jealousy, pride, guilt. Multiple perspectives.',
+  5: 'Abstract concepts. Moral ambiguity, symbolism, unreliable narrators.',
 };
 
-/**
- * Generates a structured prompt for the AI to rewrite text based on cognitive load settings.
- */
-export const generateRewritePrompt = (originalText: string, settings: CognitiveSettings): string => {
-  // Clamp values between 1 and 5
-  const lex = Math.max(1, Math.min(5, settings.lexicalLevel));
-  const con = Math.max(1, Math.min(5, settings.conceptualLevel));
+export function generateRewritePrompt(
+  originalText: string,
+  settings: CognitiveSettings
+): string {
+  const lexicalDesc = LEXICAL_DESCRIPTIONS[settings.lexicalLevel];
+  const conceptualDesc = CONCEPTUAL_DESCRIPTIONS[settings.conceptualLevel];
 
-  const instructions = `
-You are a Cognitive Editor. Rewrite the story text below to match the following specific reading level criteria:
-
-TARGET AUDIENCE PROFILE:
-1. LEXICAL LEVEL (${lex}/5): ${LEXICAL_GUIDES[lex]}
-2. CONCEPTUAL LEVEL (${con}/5): ${CONCEPTUAL_GUIDES[con]}
-
-ORIGINAL TEXT:
-"${originalText}"
-
-OUTPUT REQUIREMENT:
-Provide ONLY the rewritten text. Do not add explanations.
-`;
-
-  return instructions.trim();
-};
-
-/**
- * Analyzes text to provide a mock cognitive score.
- * In a real implementation, this would use NLP libraries like 'syllable' or 'flesch-kincaid'.
- */
-export const analyzeStoryBeat = (text: string): CognitiveAnalysis => {
-  const cleanText = text.trim();
-  if (!cleanText) {
-    return { lexicalScore: 0, conceptualScore: 0, wordCount: 0, readabilityLabel: 'Empty' };
+  let focusInstruction = '';
+  
+  if (settings.lexicalLevel <= 2 && settings.conceptualLevel <= 2) {
+    focusInstruction = `
+Focus on: "What do you see?"
+- Use short sentences (3-6 words)
+- Repetition is good ("The fox ran. The fox ran fast.")
+- Concrete nouns only
+- Present tense`;
+  } else if (settings.lexicalLevel >= 4 && settings.conceptualLevel >= 4) {
+    focusInstruction = `
+Focus on: "Why did they do that?"
+- Use complex sentence structures with subordinate clauses
+- Include metaphors and figurative language
+- Explore character motivations and internal conflict
+- Show moral complexity`;
+  } else {
+    focusInstruction = `
+Balance between showing and explaining:
+- Mix simple and compound sentences
+- Include some descriptive language
+- Characters can have relatable emotions`;
   }
 
-  const words = cleanText.split(/\s+/);
+  return `Rewrite the following story text for a specific reading level.
+
+LEXICAL LEVEL (${settings.lexicalLevel}/5): ${lexicalDesc}
+CONCEPTUAL LEVEL (${settings.conceptualLevel}/5): ${conceptualDesc}
+
+${focusInstruction}
+
+ORIGINAL TEXT:
+"""
+${originalText}
+"""
+
+Rewritten version:`;
+}
+
+export function analyzeStoryBeat(text: string): StoryBeatAnalysis {
+  // Mock analysis - in production this would call an AI service
+  const words = text.split(/\s+/).filter(w => w.length > 0);
+  const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+  
   const wordCount = words.length;
+  const sentenceCount = Math.max(1, sentences.length);
+  const avgWordsPerSentence = wordCount / sentenceCount;
   
-  // Heuristic: Average word length for Lexical Score
-  const totalChars = words.reduce((acc, word) => acc + word.length, 0);
-  const avgWordLength = totalChars / wordCount;
+  // Simple heuristic scoring
+  const avgWordLength = words.reduce((sum, w) => sum + w.length, 0) / Math.max(1, wordCount);
   
-  // Heuristic: Average sentence length for Conceptual Score
-  const sentences = cleanText.split(/[.!?]+/).filter(s => s.length > 0);
-  const avgSentenceLength = wordCount / (sentences.length || 1);
-
-  // Map heuristics to 1-5 scale (Mock logic)
-  let lexicalScore = 1;
-  if (avgWordLength > 6) lexicalScore = 5;
-  else if (avgWordLength > 5) lexicalScore = 4;
-  else if (avgWordLength > 4.5) lexicalScore = 3;
-  else if (avgWordLength > 3.5) lexicalScore = 2;
-
-  let conceptualScore = 1;
-  if (avgSentenceLength > 20) conceptualScore = 5;
-  else if (avgSentenceLength > 15) conceptualScore = 4;
-  else if (avgSentenceLength > 10) conceptualScore = 3;
-  else if (avgSentenceLength > 6) conceptualScore = 2;
-
-  let label = 'Early Reader';
-  if (lexicalScore + conceptualScore > 8) label = 'Young Adult';
-  else if (lexicalScore + conceptualScore > 5) label = 'Middle Grade';
-
+  let lexicalScore = Math.min(5, Math.max(1, Math.round(avgWordLength / 1.5)));
+  let conceptualScore = Math.min(5, Math.max(1, Math.round(avgWordsPerSentence / 5)));
+  
+  const suggestions: string[] = [];
+  
+  if (avgWordsPerSentence > 15) {
+    suggestions.push('Consider breaking up longer sentences for younger readers.');
+  }
+  if (avgWordLength > 6) {
+    suggestions.push('Some words may be challenging. Consider simpler synonyms.');
+  }
+  if (wordCount < 20) {
+    suggestions.push('Short passage - analysis may be less accurate.');
+  }
+  
+  const readingAges = ['Pre-K', 'K-1st', '2nd-3rd', '4th-6th', '7th+'];
+  const ageIndex = Math.round((lexicalScore + conceptualScore) / 2) - 1;
+  
   return {
+    estimatedReadingAge: readingAges[Math.max(0, Math.min(4, ageIndex))],
     lexicalScore,
     conceptualScore,
+    suggestions,
     wordCount,
-    readabilityLabel: label,
-    suggestion: lexicalScore > 3 ? "Consider shortening sentences for better flow." : "Good simplicity."
+    sentenceCount,
+    avgWordsPerSentence: Math.round(avgWordsPerSentence * 10) / 10,
   };
-};
+}

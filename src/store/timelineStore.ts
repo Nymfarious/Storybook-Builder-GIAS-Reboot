@@ -9,22 +9,22 @@ export interface TimelineTrack {
   name: string;
   type: TrackType;
   category: TrackCategory;
-  isCollapsed?: boolean; // For grouping
-  parentId?: string; // If it belongs to a group (e.g., 'visuals')
+  isCollapsed?: boolean;
+  parentId?: string;
 }
 
 export interface Clip {
   id: string;
   trackId: string;
-  startTime: number; // in seconds
-  duration: number;  // in seconds
-  content: string;   // Label or Asset URL
+  startTime: number;
+  duration: number;
+  content: string;
 }
 
 export interface PageMarker {
   id: string;
   time: number;
-  label: string; // e.g., "Page 1 End", "Transition"
+  label: string;
 }
 
 interface TimelineState {
@@ -32,7 +32,6 @@ interface TimelineState {
   clips: Clip[];
   markers: PageMarker[];
   
-  // Actions
   addClip: (clip: Clip) => void;
   updateClip: (id: string, updates: Partial<Clip>) => void;
   removeClip: (id: string) => void;
@@ -40,24 +39,19 @@ interface TimelineState {
   addTrack: (track: TimelineTrack) => void;
   toggleTrackCollapse: (trackId: string) => void;
   
-  // Cut Tools
-  cutInside: (start: number, end: number) => void; // Ripple Delete
-  cutOutside: (start: number, end: number) => void; // Trim
+  addMarker: (marker: PageMarker) => void;
+  
+  cutInside: (start: number, end: number) => void;
+  cutOutside: (start: number, end: number) => void;
 }
 
-// Initial Mock Data
 const INITIAL_TRACKS: TimelineTrack[] = [
-  // Visual Group
   { id: 'grp-visuals', name: 'Visuals', type: 'background', category: 'visual', isCollapsed: false },
   { id: 't-bg', name: 'Backgrounds', type: 'background', category: 'visual', parentId: 'grp-visuals' },
   { id: 't-chars', name: 'Characters', type: 'character', category: 'visual', parentId: 'grp-visuals' },
   { id: 't-props', name: 'Props', type: 'prop', category: 'visual', parentId: 'grp-visuals' },
-  
-  // Audio Group (Separate lines)
   { id: 't-audio', name: 'Music / Ambience', type: 'audio', category: 'audio' },
   { id: 't-sfx', name: 'Sound FX', type: 'sfx', category: 'audio' },
-  
-  // Interaction
   { id: 't-interact', name: 'Interactions', type: 'interaction', category: 'interaction' },
 ];
 
@@ -106,6 +100,10 @@ export const useTimelineStore = create<TimelineState>()(
       }
     }),
 
+    addMarker: (marker) => set((state) => {
+      state.markers.push(marker);
+    }),
+
     cutInside: (rangeStart, rangeEnd) => set((state) => {
       const gap = rangeEnd - rangeStart;
       const newClips: Clip[] = [];
@@ -124,7 +122,6 @@ export const useTimelineStore = create<TimelineState>()(
           return;
         }
         
-        // Handle overlaps (simplified split logic for brevity)
         if (clip.startTime < rangeStart) {
           clip.duration = rangeStart - clip.startTime;
           newClips.push(clip);
@@ -139,19 +136,17 @@ export const useTimelineStore = create<TimelineState>()(
         const clipEnd = clip.startTime + clip.duration;
         if (clipEnd <= rangeStart || clip.startTime >= rangeEnd) return;
         
-        // Trim logic
         if (clip.startTime < rangeStart) {
-            clip.duration -= (rangeStart - clip.startTime);
-            clip.startTime = rangeStart;
+          clip.duration -= (rangeStart - clip.startTime);
+          clip.startTime = rangeStart;
         }
         const currentEnd = clip.startTime + clip.duration;
         if (currentEnd > rangeEnd) {
-            clip.duration -= (currentEnd - rangeEnd);
+          clip.duration -= (currentEnd - rangeEnd);
         }
         newClips.push(clip);
       });
       state.clips = newClips;
     })
-
   }))
 );

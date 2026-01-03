@@ -13,18 +13,14 @@ import { StoryWorkspace } from './features/workspace/StoryWorkspace';
 type ViewState = 'dashboard' | 'workspace';
 
 const App: React.FC = () => {
-  // Routing State
   const [currentView, setCurrentView] = useState<ViewState>('workspace');
-
-  // Local UI State (Zoom/DevTools don't need to be in the global Undo store)
   const [scale, setScale] = useState(0.6);
   const [isDevToolsOpen, setIsDevToolsOpen] = useState(false);
   
-  // Read from store for stats/properties
   const { pages, activePageIndex, selectedBlockId } = useStoryStore();
   const currentPage = pages[activePageIndex];
 
-  // Keyboard shortcut for DevTools
+  // Keyboard shortcut for DevTools (Ctrl+D)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
@@ -38,8 +34,7 @@ const App: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // --- Views ---
-
+  // --- Dashboard View ---
   const renderDashboard = () => (
     <div className="h-screen w-screen bg-slate-900 flex items-center justify-center flex-col gap-6">
       <div className="text-center space-y-2">
@@ -66,6 +61,7 @@ const App: React.FC = () => {
     </div>
   );
 
+  // --- Workspace View ---
   const renderWorkspace = () => {
     const leftPanel = <Sidebar />;
 
@@ -87,16 +83,22 @@ const App: React.FC = () => {
         </div>
         
         {selectedBlockId ? (
-           <div className="flex-1 space-y-4">
-              <div className="bg-black/30 p-3 rounded border border-gray-700 relative">
-                 <div className="flex justify-between items-start mb-2">
-                   <h3 className="text-white text-sm font-bold">Selected Block</h3>
-                   <AIStub label="Summarize" context="Properties.BlockSelected" />
-                 </div>
-                 <p className="text-xs text-secondary font-mono mb-1">ID: {selectedBlockId.slice(0, 8)}...</p>
-                 <div className="text-xs text-gray-400 italic">Edit properties here...</div>
+          <div className="flex-1 space-y-4">
+            <div className="bg-black/30 p-3 rounded border border-gray-700 relative">
+              <div className="flex justify-between items-start mb-2">
+                <h3 className="text-white text-sm font-bold">Selected Block</h3>
+                <AIStub label="Enhance" context="Properties.BlockSelected" />
               </div>
-           </div>
+              <p className="text-xs text-primary font-mono mb-1">ID: {selectedBlockId.slice(0, 8)}...</p>
+              <p className="text-[10px] text-gray-500">
+                Rotation: {currentPage?.blocks.find(b => b.id === selectedBlockId)?.rotation?.toFixed(0) || 0}°
+              </p>
+              <p className="text-[10px] text-gray-500">
+                Z-Index: {currentPage?.blocks.find(b => b.id === selectedBlockId)?.zIndex || 1}
+              </p>
+              <div className="text-xs text-gray-400 italic mt-2">Drag to move • Use handle to rotate</div>
+            </div>
+          </div>
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-gray-600 text-center space-y-2 opacity-50 border-2 border-dashed border-gray-800 rounded-lg m-2">
             <span className="text-sm">Select an element</span>
@@ -105,18 +107,18 @@ const App: React.FC = () => {
         )}
 
         <div className="mt-auto bg-gray-900/50 p-3 rounded border border-gray-800">
-           <div className="flex justify-between items-center mb-1">
-              <h4 className="text-xs font-bold text-gray-400">Story Stats</h4>
-              <AIStub label="Analyze" context="StoryStats.Footer" />
-           </div>
-           <div className="flex justify-between text-xs text-gray-500">
-             <span>Total Pages</span>
-             <span>{pages.length}</span>
-           </div>
-           <div className="flex justify-between text-xs text-gray-500">
-             <span>Blocks (Current)</span>
-             <span>{currentPage?.blocks.length || 0}</span>
-           </div>
+          <div className="flex justify-between items-center mb-1">
+            <h4 className="text-xs font-bold text-gray-400">Story Stats</h4>
+            <AIStub label="Analyze" context="StoryStats.Footer" />
+          </div>
+          <div className="flex justify-between text-xs text-gray-500">
+            <span>Total Pages</span>
+            <span>{pages.length}</span>
+          </div>
+          <div className="flex justify-between text-xs text-gray-500">
+            <span>Blocks (Current)</span>
+            <span>{currentPage?.blocks.length || 0}</span>
+          </div>
         </div>
       </div>
     );

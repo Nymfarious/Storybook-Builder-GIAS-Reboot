@@ -6,31 +6,27 @@ interface StudioLayoutProps {
   rightPanel: ReactNode;
 }
 
-const StudioLayout: React.FC<StudioLayoutProps> = ({ leftPanel, centerStage, rightPanel }) => {
+const StudioLayout: React.FC<StudioLayoutProps> = ({ 
+  leftPanel, 
+  centerStage, 
+  rightPanel 
+}) => {
   return (
-    <div className="h-full w-full bg-background text-slate-100 overflow-hidden flex flex-col">
-      {/* 
-          Main Grid Area 
-          Using minmax(0, 1fr) for center stage to prevent layout blowout
-      */}
-      <div className="flex-1 overflow-hidden grid grid-cols-[250px_minmax(0,1fr)_300px] h-full">
-        
-        {/* Left Sidebar */}
-        <aside className="border-r border-gray-800 bg-surface/50 overflow-y-auto">
-          {leftPanel}
-        </aside>
+    <div className="h-full w-full grid grid-cols-[250px_minmax(0,1fr)_280px] bg-slate-950">
+      {/* Left Panel - Sidebar */}
+      <aside className="bg-slate-900 border-r border-slate-800 overflow-hidden flex flex-col">
+        {leftPanel}
+      </aside>
 
-        {/* Center Stage */}
-        <main className="relative bg-[#0c0c0e] overflow-hidden flex flex-col">
-          {centerStage}
-        </main>
+      {/* Center Stage - Canvas */}
+      <main className="relative overflow-hidden bg-slate-900">
+        {centerStage}
+      </main>
 
-        {/* Right Sidebar (Properties) */}
-        <aside className="border-l border-gray-800 bg-surface/50 overflow-y-auto">
-          {rightPanel}
-        </aside>
-
-      </div>
+      {/* Right Panel - Properties */}
+      <aside className="bg-slate-900 border-l border-slate-800 overflow-hidden flex flex-col">
+        {rightPanel}
+      </aside>
     </div>
   );
 };

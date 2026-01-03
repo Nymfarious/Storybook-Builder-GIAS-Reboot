@@ -1,51 +1,62 @@
 import React from 'react';
-import { ZoomIn, ZoomOut, Maximize, RotateCcw } from 'lucide-react';
+import { ZoomIn, ZoomOut, Maximize2 } from 'lucide-react';
 
 interface ZoomControlsProps {
   scale: number;
   setScale: (scale: number) => void;
-  onFit: () => void;
 }
 
-const ZoomControls: React.FC<ZoomControlsProps> = ({ scale, setScale, onFit }) => {
+const ZOOM_PRESETS = [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
+
+const ZoomControls: React.FC<ZoomControlsProps> = ({ scale, setScale }) => {
+  const handleZoomIn = () => {
+    const nextPreset = ZOOM_PRESETS.find(z => z > scale);
+    setScale(nextPreset || scale);
+  };
+
+  const handleZoomOut = () => {
+    const prevPresets = ZOOM_PRESETS.filter(z => z < scale);
+    setScale(prevPresets[prevPresets.length - 1] || scale);
+  };
+
+  const handleFitToScreen = () => {
+    setScale(0.6);
+  };
+
   return (
-    <div className="absolute bottom-6 right-6 flex items-center gap-2 bg-surface/90 backdrop-blur border border-gray-700 p-1.5 rounded-lg shadow-xl z-50">
-      <button 
-        onClick={() => setScale(Math.max(0.1, scale - 0.1))}
-        className="p-2 hover:bg-white/10 rounded text-gray-300 hover:text-white transition-colors"
+    <div className="absolute bottom-4 right-4 flex items-center gap-1 bg-slate-800/90 backdrop-blur-sm rounded-lg p-1 shadow-xl border border-slate-700">
+      <button
+        onClick={handleZoomOut}
+        disabled={scale <= ZOOM_PRESETS[0]}
+        className="p-2 hover:bg-slate-700 rounded text-gray-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
         title="Zoom Out"
       >
-        <ZoomOut size={18} />
+        <ZoomOut size={16} />
       </button>
       
-      <span className="w-12 text-center text-xs font-mono font-medium text-primary">
-        {Math.round(scale * 100)}%
-      </span>
+      <div className="px-2 min-w-[50px] text-center">
+        <span className="text-xs font-mono text-gray-400">
+          {Math.round(scale * 100)}%
+        </span>
+      </div>
       
-      <button 
-        onClick={() => setScale(Math.min(5, scale + 0.1))}
-        className="p-2 hover:bg-white/10 rounded text-gray-300 hover:text-white transition-colors"
+      <button
+        onClick={handleZoomIn}
+        disabled={scale >= ZOOM_PRESETS[ZOOM_PRESETS.length - 1]}
+        className="p-2 hover:bg-slate-700 rounded text-gray-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
         title="Zoom In"
       >
-        <ZoomIn size={18} />
-      </button>
-
-      <div className="w-px h-4 bg-gray-700 mx-1" />
-
-      <button 
-        onClick={onFit}
-        className="p-2 hover:bg-white/10 rounded text-gray-300 hover:text-white transition-colors"
-        title="Fit to Screen"
-      >
-        <Maximize size={18} />
+        <ZoomIn size={16} />
       </button>
       
-       <button 
-        onClick={() => setScale(1)}
-        className="p-2 hover:bg-white/10 rounded text-gray-300 hover:text-white transition-colors"
-        title="Reset 100%"
+      <div className="w-px h-6 bg-slate-600 mx-1" />
+      
+      <button
+        onClick={handleFitToScreen}
+        className="p-2 hover:bg-slate-700 rounded text-gray-300 transition-colors"
+        title="Fit to Screen"
       >
-        <RotateCcw size={18} />
+        <Maximize2 size={16} />
       </button>
     </div>
   );
