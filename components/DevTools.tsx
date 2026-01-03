@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Activity, Database, Palette, Flag, Terminal, Info, Globe } from 'lucide-react';
+import { X, Activity, Database, Palette, Flag, Terminal, Info, Globe, Link as LinkIcon, AlertCircle } from 'lucide-react';
 import { INITIAL_FLAGS, API_REGISTRY, MOCK_USER } from '../constants';
 
 interface DevToolsProps {
@@ -10,12 +10,28 @@ interface DevToolsProps {
 const DevTools: React.FC<DevToolsProps> = ({ isOpen, onClose }) => {
   const [activeTab, setActiveTab] = useState<'env' | 'flags' | 'api' | 'colors'>('env');
   const [flags, setFlags] = useState(INITIAL_FLAGS);
+  const [masterLinkStatus, setMasterLinkStatus] = useState<'disconnected' | 'connecting' | 'linked'>('disconnected');
   
   // Simple heuristic to detect environment
   const hostname = window.location.hostname;
   const isGithubPages = hostname.includes('github.io');
   const isLocal = hostname.includes('localhost') || hostname.includes('127.0.0.1');
   const detectedEnv = isGithubPages ? 'GitHub Pages' : isLocal ? 'Localhost' : 'Unknown / GIAS';
+
+  // Integration: Listen for Master DevTools
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      // In a real implementation, you would check event.origin for security
+      if (event.data?.type === 'MASTER_DEVTOOLS_PING') {
+        setMasterLinkStatus('linked');
+        console.log("MeKu Builder: Connected to Master DevTools");
+      }
+    };
+    
+    // Simulate a check/listen
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
 
   if (!isOpen) return null;
 
@@ -44,10 +60,18 @@ const DevTools: React.FC<DevToolsProps> = ({ isOpen, onClose }) => {
       <div className="relative w-full max-w-4xl h-[600px] bg-background border border-gray-700 shadow-2xl rounded-t-xl sm:rounded-xl pointer-events-auto flex flex-col overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-700 bg-black/20">
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-3">
             <Terminal className="text-primary" size={20} />
-            <h2 className="text-lg font-bold text-white tracking-wide">DevTools Mini</h2>
-            <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded border border-primary/30">Phase 0</span>
+            <h2 className="text-lg font-bold text-white tracking-wide">MeKu DevTools</h2>
+            <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded border border-primary/30">v0.1.2</span>
+            
+            {/* Master Link Status */}
+            <div className={`flex items-center space-x-1 px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider ${
+              masterLinkStatus === 'linked' ? 'bg-green-900/50 text-green-400 border border-green-800' : 'bg-gray-800 text-gray-500 border border-gray-700'
+            }`}>
+              <LinkIcon size={10} />
+              <span>{masterLinkStatus === 'linked' ? 'Master Linked' : 'Standalone'}</span>
+            </div>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors">
             <X size={20} />
@@ -78,16 +102,30 @@ const DevTools: React.FC<DevToolsProps> = ({ isOpen, onClose }) => {
                   <span className={`${isGithubPages ? 'text-purple-400' : 'text-green-400'}`}>{detectedEnv}</span>
                   <span className="text-secondary">Base Path:</span>
                   <span className="text-orange-300">{window.location.pathname}</span>
-                  <span className="text-secondary">Reboot Status:</span>
-                  <span className="text-primary">Active</span>
+                  <span className="text-secondary">Master DevTools:</span>
+                  <span className={masterLinkStatus === 'linked' ? 'text-green-400' : 'text-red-400'}>
+                    {masterLinkStatus === 'linked' ? 'Connected' : 'Not Detected'}
+                  </span>
                 </div>
               </div>
+
+              {isGithubPages && (
+                <div className="bg-blue-900/20 border border-blue-800 p-4 rounded-lg flex items-start gap-3">
+                  <AlertCircle className="text-blue-400 shrink-0 mt-0.5" size={16} />
+                  <div>
+                    <h4 className="text-blue-300 text-sm font-bold">GitHub Pages Detected</h4>
+                    <p className="text-xs text-blue-200/70 mt-1">
+                      Running in static mode. Some dynamic backend features (Supabase) will be mocked automatically.
+                    </p>
+                  </div>
+                </div>
+              )}
 
               <div className="bg-black/30 p-4 rounded-lg border border-gray-700 font-mono text-sm">
                 <h3 className="text-gray-400 mb-2 uppercase text-xs font-bold tracking-wider">Build Info</h3>
                 <div className="grid grid-cols-2 gap-y-2">
                   <span className="text-secondary">App Version:</span>
-                  <span className="text-white">v0.1.1-reboot</span>
+                  <span className="text-white">v0.1.2-reboot</span>
                   <span className="text-secondary">React Version:</span>
                   <span className="text-white">18.2.0</span>
                   <span className="text-secondary">User ID:</span>

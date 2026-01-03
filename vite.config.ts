@@ -1,23 +1,19 @@
-import path from 'path';
-import { defineConfig, loadEnv } from 'vite';
+import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { viteSingleFile } from 'vite-plugin-singlefile';
 
-export default defineConfig(({ mode }) => {
-    const env = loadEnv(mode, '.', '');
-    return {
-      server: {
-        port: 3000,
-        host: '0.0.0.0',
-      },
-      plugins: [react()],
-      define: {
-        'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-        'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY)
-      },
-      resolve: {
-        alias: {
-          '@': path.resolve(__dirname, '.'),
-        }
-      }
-    };
+// https://vitejs.dev/config/
+export default defineConfig({
+  plugins: [
+    react(),
+    // Flattens the build into a single index.html for Google Apps Script compatibility
+    viteSingleFile() 
+  ],
+  // Ensures assets use relative paths './' instead of absolute '/'
+  // Critical for GitHub Pages subdirectories and GIAS sandboxed iframes
+  base: './', 
+  build: {
+    // Optimization: Don't minify too aggressively if we need to debug in GIAS
+    minify: 'esbuild',
+  }
 });

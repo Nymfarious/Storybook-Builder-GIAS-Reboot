@@ -1,5 +1,5 @@
 {
-  "name": "storybook-builder-gias-reboot",
+  "name": "meku-storybook-builder",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -9,10 +9,20 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "react": "^19.2.3",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
     "@google/genai": "^1.34.0",
-    "lucide-react": "^0.562.0",
-    "react-dom": "^19.2.3"
+    "lucide-react": "0.294.0",
+    "vite": "^5.0.0",
+    "@vitejs/plugin-react": "^4.2.0",
+    "zustand": "^5.0.9",
+    "immer": "10.0.4",
+    "zundo": "2.1.0",
+    "framer-motion": "11.0.8",
+    "clsx": "2.1.0",
+    "tailwind-merge": "2.2.1",
+    "vite-plugin-singlefile": "^2.3.0",
+    "path": "^0.12.7"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

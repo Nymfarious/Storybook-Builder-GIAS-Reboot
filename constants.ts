@@ -2,9 +2,9 @@ import { Project, Page, LayoutType, User, FeatureFlag, ApiRegistryItem, PageSize
 
 export const MOCK_USER: User = {
   id: 'usr_123',
-  name: 'Taylor Storyteller',
-  email: 'taylor@example.com',
-  avatar: 'https://picsum.photos/seed/taylor/200',
+  name: 'MeKu Creator',
+  email: 'creator@meku.app',
+  avatar: 'https://picsum.photos/seed/meku/200',
   isDev: true,
 };
 
